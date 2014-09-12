@@ -70,7 +70,6 @@
                 NGAME.ui.process.style.cssText = 'width: 0%;';
                 NGAME.ui.score.innerText = ++score;
                 if (score === 25 || score === 50 || score === 80) {
-//                if (score === 1 || score === 2 || score === 3) {
                     NGAME.timer.speedUp();
                 }
                 equal = NGAME.process();
@@ -99,22 +98,37 @@
     NGAME.timer = (function () {
         var timer = null;
         var duration = 2000;
+        var ms;
+        var timeStart;
 
         return {
             speedUp: function () {
                 duration /= 2;
+            },
+            checkCheat: function () {
+                if (+new Date - timeStart - ms > duration / 10) {
+                    NGAME.ui.process.style.cssText = 'width: 100%;';
+                    NGAME.status.end();
+                    console.log('cheat');
+                    return false;
+                }
+                return true;
             },
             clearTimer: function () {
                 clearTimeout(timer);
             },
             resetTimer: function () {
                 clearTimeout(timer);
-                var ms = 0;
+                ms = 0;
 //                NGAME.ui.process.className = 'animation';
                 NGAME.ui.process.style.cssText = 'width: 0%;';
 //                NGAME.ui.process.style.cssText = 'width: 10%;';
+                timeStart = +new Date;
                 timer = setInterval(function () {
                     ms += duration / 10;
+                    if (!NGAME.timer.checkCheat()) {
+                        return;
+                    }
                     NGAME.ui.process.style.cssText = 'width: ' + ms / duration * 100 + '%;';
                     if (ms >= duration) {
                         NGAME.status.end();
@@ -128,7 +142,7 @@
     NGAME.process = function () {
         var numbers = NGAME.util.generateNumbers();
         var equal = true, delta = 0;
-        if (Math.random() < 0.6) {
+        if (Math.random() < 0.55) {
             equal = false;
             delta = NGAME.util.generateDelta();
         }
@@ -174,7 +188,7 @@
         };
 
         NGAME.util.bindTap(NGAME.ui.trueBtn, function () {
-            if (!NGAME.status.check()) {
+            if (!NGAME.status.check() || !NGAME.timer.checkCheat()) {
                 return;
             }
             if (NGAME.status.getEqual() === true) {
@@ -186,7 +200,7 @@
         });
 
         NGAME.util.bindTap(NGAME.ui.falseBtn, function () {
-            if (!NGAME.status.check()) {
+            if (!NGAME.status.check() || !NGAME.timer.checkCheat()) {
                 return;
             }
             if (NGAME.status.getEqual() === false) {
