@@ -221,7 +221,7 @@
                 img_height: NGAME.share.imgSize,
                 link: NGAME.share.url,
                 desc: NGAME.share.desc,
-                title: NGAME.share.title
+                title: NGAME.share.desc
             });
         });
     });
