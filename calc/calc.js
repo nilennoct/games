@@ -92,7 +92,7 @@
                 NGAME.util.hide(NGAME.ui.mask);
                 NGAME.status.next();
             }
-        }
+        };
     })();
 
     NGAME.timer = (function () {
@@ -106,12 +106,13 @@
                 duration /= 2;
             },
             checkCheat: function () {
-                if (+new Date - timeStart - ms > duration / 10) {
+                var delta = +new Date() - timeStart - ms;
+                if (delta > 500) {
                     NGAME.ui.process.style.cssText = 'width: 100%;';
                     NGAME.status.end();
-                    console.log('cheat');
                     return false;
                 }
+                timeStart += delta;
                 return true;
             },
             clearTimer: function () {
@@ -123,7 +124,7 @@
 //                NGAME.ui.process.className = 'animation';
                 NGAME.ui.process.style.cssText = 'width: 0%;';
 //                NGAME.ui.process.style.cssText = 'width: 10%;';
-                timeStart = +new Date;
+                timeStart = +new Date();
                 timer = setInterval(function () {
                     ms += duration / 10;
                     if (!NGAME.timer.checkCheat()) {
@@ -136,7 +137,7 @@
 //                    NGAME.ui.process.style.cssText = 'width: ' + (ms + 200) / 20 + '%;';
                 }, duration / 10);
             }
-        }
+        };
     })();
 
     NGAME.process = function () {
@@ -214,10 +215,14 @@
         NGAME.util.bindTap(NGAME.ui.restartBtn, function () {
             NGAME.status.reset();
         });
+
+        document.addEventListener('touchmove', function (event) {
+            event.preventDefault();
+        });
     });
 
     document.addEventListener('WeixinJSBridgeReady', function () {
-        WeixinJSBridge.on('menu:share:appmessage', function (argv) {
+        WeixinJSBridge.on('menu:share:appmessage', function () {
             WeixinJSBridge.invoke('sendAppMessage', {
                 appid: NGAME.share.appId,
                 img_url: NGAME.share.img,
@@ -228,7 +233,7 @@
                 title: NGAME.share.title
             });
         });
-        WeixinJSBridge.on('menu:share:timeline', function (argv) {
+        WeixinJSBridge.on('menu:share:timeline', function () {
             WeixinJSBridge.invoke('shareTimeline', {
                 img_url: NGAME.share.img,
                 img_width: NGAME.share.imgSize,
