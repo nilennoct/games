@@ -12,7 +12,7 @@
             return (NGAME.util.randInt(0, 1) * 2 + 1) * (Math.random() < 0.5 ? -1 : 1);
         },
         generateOperator: function () {
-            return Math.random() < 0.5 ? '+' : '-';
+            return Math.random() < 0.35 ? '+' : Math.random() < 0.7 ? '-' : '*';
         },
         getEqualFlag: (function () {
             var last;
@@ -185,17 +185,27 @@
         }
 
         var operator = NGAME.util.generateOperator();
-        if (operator === '+') {
-            numbers[2] = numbers[0] + numbers[1] + delta;
-        }
-        else {
-            numbers[2] = numbers[0];
-            numbers[0] = numbers[0] + numbers[1] + delta;
+        var textL, text = '';
+        switch (operator) {
+            case '+': {
+                numbers[2] = numbers[0] + numbers[1] + delta;
+                textL = numbers[0] + ' ＋ ' + numbers[1];
+                break;
+            }
+            case '-': {
+                numbers[2] = numbers[0];
+                numbers[0] = numbers[0] + numbers[1] + delta;
+                textL = numbers[0] + ' － ' + numbers[1];
+                break;
+            }
+            case '*': {
+                numbers[2] = numbers[0] * numbers[1] + delta;
+                textL = numbers[0] + ' × ' + numbers[1];
+                break;
+            }
         }
 
-        var text = '';
-        var textL = operator === '+' ? numbers[0] + ' + ' + numbers[1] : numbers[0] + ' - ' + numbers[1];
-        text += Math.random() < 0.5 ? textL + ' = ' + numbers[2] : numbers[2] + ' = ' + textL;
+        text += Math.random() < 0.5 ? textL + ' ＝ ' + numbers[2] : numbers[2] + ' ＝ ' + textL;
 
         NGAME.ui.equation.innerText = text;
         NGAME.timer.resetTimer();
