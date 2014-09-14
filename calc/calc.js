@@ -225,16 +225,16 @@
     var document = window.document;
     window.addEventListener('load', function () {
         NGAME.ui = {
-            score: document.querySelector('#score'),
-            process: document.querySelector('#process'),
-            equation: document.querySelector('#equation'),
-            mask: document.querySelector('#mask'),
-            result: document.querySelector('#result'),
-            highest: document.querySelector('#highest'),
-            restartBtn: document.querySelector('#restartBtn')
+            score: document.getElementById('score'),
+            process: document.getElementById('process'),
+            equation: document.getElementById('equation'),
+            mask: document.getElementById('mask'),
+            result: document.getElementById('result'),
+            highest: document.getElementById('highest'),
+            restartBtn: document.getElementById('restartBtn')
         };
 
-        NGAME.util.bindTap(document.querySelector('#trueBtn'), function () {
+        NGAME.util.bindTap(document.getElementById('trueBtn'), function () {
             if (!NGAME.status.check() || !NGAME.timer.checkCheat()) {
                 return;
             }
@@ -246,7 +246,7 @@
             }
         });
 
-        NGAME.util.bindTap(document.querySelector('#falseBtn'), function () {
+        NGAME.util.bindTap(document.getElementById('falseBtn'), function () {
             if (!NGAME.status.check() || !NGAME.timer.checkCheat()) {
                 return;
             }
@@ -263,7 +263,7 @@
         });
 
         if (typeof WeixinJSBridge === 'undefined') {
-            NGAME.util.hide(document.querySelector('#share'));
+            NGAME.util.hide(document.getElementById('share'));
         }
 
         if (typeof window.localStorage !== 'undefined') {
