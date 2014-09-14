@@ -5,6 +5,7 @@ body, div, p {
 body {
     width: 100%;
     overflow: hidden;
+    color: #444;
     font: 14px/1.6 Helvetica, Arail, san-serif;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
@@ -15,7 +16,10 @@ body {
 }
 .status {
     font-size: 18px;
-    padding: 10px 20px;
+    margin: 20px;
+}
+#score {
+    display: inline-block;
 }
 .content {
     margin: 40px 20px;
@@ -87,7 +91,7 @@ body {
     font-size: 18px;
     text-align: center;
 }
-.share {
+#share {
     position: absolute;
     top: 10px;
     right: 10px;
@@ -103,4 +107,7 @@ body {
     p {
         margin-bottom: 20px;
     }
+}
+#highest {
+    margin-top: 20px;
 }

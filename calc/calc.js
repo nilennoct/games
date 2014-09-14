@@ -14,6 +14,30 @@
         generateOperator: function () {
             return Math.random() < 0.5 ? '+' : '-';
         },
+        getEqualFlag: (function () {
+            var last;
+            var count = 0;
+
+            return function () {
+                var equal = Math.random() < 0.5;
+// console.log('Generate: ' + equal);
+                if (equal === last) {
+                    if (count >= 2 && Math.random() < (count + 1) / 10) {
+                        equal = !equal;
+                        count = 1;
+                    }
+                    else {
+                        count++;
+                    }
+                }
+                else {
+                    count = 1;
+                }
+// console.log('Return: ' + equal);
+// console.log('----------------');
+                return (last = equal);
+            };
+        })(),
         bindTap: function (dom, callback) {
             if ('ontouchend' in window) {
                 var touchStartPoint, touchStartTime;
@@ -69,7 +93,7 @@
 //                NGAME.ui.process.className = '';
                 NGAME.ui.process.style.cssText = 'width: 0%;';
                 NGAME.ui.score.innerText = ++score;
-                if (score === 25 || score === 50 || score === 80) {
+                if (score === 25 || score === 45 || score === 60 || score === 75 || score === 90) {
                     NGAME.timer.speedUp();
                 }
                 equal = NGAME.process();
@@ -80,6 +104,11 @@
 //                NGAME.ui.process.className = '';
 //                NGAME.ui.process.style.cssText = 'width: 0%;';
                 NGAME.ui.result.innerHTML = '<p>游戏结束</p><p>最终得分：' + score + '</p>';
+                var highest = window.localStorage.getItem('highest');
+                if (score > highest) {
+                    NGAME.ui.highest.innerText = '历史最高分：' + score;
+                    window.localStorage.setItem('highest', score);
+                }
                 NGAME.ui.restartBtn.innerText = '► 重试';
                 NGAME.share.desc = '我得了' + score + '分，你能算得比我快吗？速算小游戏，看谁算得快？';
                 NGAME.util.show(NGAME.ui.mask);
@@ -97,13 +126,18 @@
 
     NGAME.timer = (function () {
         var timer = null;
-        var duration = 2000;
+        var duration = 3000;
         var ms;
         var timeStart;
 
         return {
             speedUp: function () {
-                duration /= 2;
+                if (duration > 2000) {
+                    duration -= 1000;
+                }
+                else {
+                    duration /= 2;
+                }
             },
             checkCheat: function () {
                 var delta = +new Date() - timeStart - ms;
@@ -116,6 +150,7 @@
                 return true;
             },
             clearTimer: function () {
+                duration = 3000;
                 clearTimeout(timer);
             },
             resetTimer: function () {
@@ -142,11 +177,13 @@
 
     NGAME.process = function () {
         var numbers = NGAME.util.generateNumbers();
-        var equal = true, delta = 0;
-        if (Math.random() < 0.55) {
-            equal = false;
+        var equal = NGAME.util.getEqualFlag();
+        var delta = 0;
+
+        if (!equal) {
             delta = NGAME.util.generateDelta();
         }
+
         var operator = NGAME.util.generateOperator();
         if (operator === '+') {
             numbers[2] = numbers[0] + numbers[1] + delta;
@@ -170,7 +207,7 @@
         appId: '',
         img: location.href.substring(0, location.href.lastIndexOf('/')) + '/calc.png',
         imgSize: '120',
-        url: location.href,
+        url: location.href.substring(0, location.href.lastIndexOf('?')) + '?' + NGAME.util.randInt(1E8, 1E9-1),
         title: '谁算得快？',
         desc: '速算小游戏，看谁算得快？'
     };
@@ -178,17 +215,16 @@
     var document = window.document;
     window.addEventListener('load', function () {
         NGAME.ui = {
-            score: document.getElementById('score'),
-            process: document.getElementById('process'),
-            equation: document.getElementById('equation'),
-            trueBtn: document.getElementById('trueBtn'),
-            falseBtn: document.getElementById('falseBtn'),
-            mask: document.getElementById('mask'),
-            result: document.getElementById('result'),
-            restartBtn: document.getElementById('restartBtn')
+            score: document.querySelector('#score'),
+            process: document.querySelector('#process'),
+            equation: document.querySelector('#equation'),
+            mask: document.querySelector('#mask'),
+            result: document.querySelector('#result'),
+            highest: document.querySelector('#highest'),
+            restartBtn: document.querySelector('#restartBtn')
         };
 
-        NGAME.util.bindTap(NGAME.ui.trueBtn, function () {
+        NGAME.util.bindTap(document.querySelector('#trueBtn'), function () {
             if (!NGAME.status.check() || !NGAME.timer.checkCheat()) {
                 return;
             }
@@ -200,7 +236,7 @@
             }
         });
 
-        NGAME.util.bindTap(NGAME.ui.falseBtn, function () {
+        NGAME.util.bindTap(document.querySelector('#falseBtn'), function () {
             if (!NGAME.status.check() || !NGAME.timer.checkCheat()) {
                 return;
             }
@@ -215,6 +251,25 @@
         NGAME.util.bindTap(NGAME.ui.restartBtn, function () {
             NGAME.status.reset();
         });
+
+        if (typeof WeixinJSBridge === 'undefined') {
+            NGAME.util.hide(document.querySelector('#share'));
+        }
+
+        if (typeof window.localStorage !== 'undefined') {
+            var highest = window.localStorage.getItem('highest');
+            if (highest !== null) {
+                NGAME.ui.highest.innerText = '历史最高分：' + highest;
+            }
+        }
+        else {
+            window.localStorage = {
+                setItem: function () {},
+                getItem: function () {
+                    return Number.MAX_VALUE;
+                }
+            };
+        }
 
         document.addEventListener('touchmove', function (event) {
             event.preventDefault();
