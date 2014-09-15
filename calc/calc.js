@@ -9,10 +9,12 @@
             return [NGAME.util.randInt(3, 9), NGAME.util.randInt(3, 14)];
         },
         generateDelta: function () {
-            return (NGAME.util.randInt(0, 1) * 2 + 1) * (Math.random() < 0.5 ? -1 : 1);
+            return NGAME.util.randInt(1, 3) * (Math.random() < 0.5 ? -1 : 1);
         },
         generateOperator: function () {
-            return Math.random() < 0.35 ? '+' : Math.random() < 0.7 ? '-' : '*';
+            var seed = Math.random();
+            // return '/';
+            return seed < 0.3 ? '+' : seed < 0.6 ? '-' : seed < 0.8 ? '*' : '/';
         },
         getEqualFlag: (function () {
             var last;
@@ -66,8 +68,9 @@
                 });
             }
         },
-        show: function (dom) {
-            dom.style.cssText = 'display: block;';
+        show: function (dom, display) {
+            display = display || 'block';
+            dom.style.cssText = 'display: ' + display + ';';
         },
         hide: function (dom) {
             dom.style.cssText = 'display: none;';
@@ -110,11 +113,15 @@
                     window.localStorage.setItem('highest', score);
                 }
                 NGAME.ui.restartBtn.innerText = '► 重试';
+
+                NGAME.ui.handleReviveBtn();
+
                 NGAME.share.desc = '我得了' + score + '分，你能算得比我快吗？速算小游戏，看谁算得快？';
                 NGAME.util.show(NGAME.ui.mask);
             },
             reset: function () {
                 score = -1;
+                NGAME.timer.resetDuration();
                 NGAME.ui.score.innerText = status = 0;
 //                NGAME.ui.process.className = '';
                 NGAME.share.desc = '速算小游戏，看谁算得快？';
@@ -131,6 +138,9 @@
                 lives -= 1;
                 window.localStorage.setItem('lives', lives);
                 status = 0;
+                if (score >= 0) {
+                    score -= 1;
+                }
                 NGAME.util.hide(NGAME.ui.mask);
                 NGAME.status.next();
             }
@@ -163,15 +173,15 @@
                 return true;
             },
             clearTimer: function () {
+                clearInterval(timer);
+            },
+            resetDuration: function () {
                 duration = 3000;
-                clearTimeout(timer);
             },
             resetTimer: function () {
-                clearTimeout(timer);
+                clearInterval(timer);
                 ms = 0;
-//                NGAME.ui.process.className = 'animation';
                 NGAME.ui.process.style.cssText = 'width: 0%;';
-//                NGAME.ui.process.style.cssText = 'width: 10%;';
                 timeStart = +new Date();
                 timer = setInterval(function () {
                     ms += duration / 10;
@@ -182,7 +192,6 @@
                     if (ms >= duration) {
                         NGAME.status.end();
                     }
-//                    NGAME.ui.process.style.cssText = 'width: ' + (ms + 200) / 20 + '%;';
                 }, duration / 10);
             }
         };
@@ -216,8 +225,21 @@
                 textL = numbers[0] + ' × ' + numbers[1];
                 break;
             }
-        }
+            case '/': {
+                numbers[2] = numbers[0];
+                numbers[0] = numbers[0] * numbers[1];
 
+                if (Math.random() < 0.5) {
+                    numbers[1] += delta;
+                }
+                else {
+                    numbers[2] += delta;
+                }
+
+                textL = numbers[0] + ' ÷ ' + numbers[1];
+                break;
+            }
+        }
         text += Math.random() < 0.5 ? textL + ' ＝ ' + numbers[2] : numbers[2] + ' ＝ ' + textL;
 
         NGAME.ui.equation.innerText = text;
@@ -232,7 +254,22 @@
         imgSize: '120',
         url: location.href.substring(0, location.href.lastIndexOf('?')) + '?' + NGAME.util.randInt(1E8, 1E9-1),
         title: '谁算得快？',
-        desc: '速算小游戏，看谁算得快？'
+        desc: '速算小游戏，看谁算得快？',
+        getBonus: function () {
+            var date = window.localStorage.getItem('date');
+            if (date === null) {
+                date = new Date();
+                date = +new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            }
+            else if (Date.now() - date < 864E5) {
+                return;
+            }
+
+            window.localStorage.setItem('lives', 3);
+            window.localStorage.setItem('date', date);
+
+            NGAME.ui.handleReviveBtn();
+        }
     };
 
     var document = window.document;
@@ -244,7 +281,19 @@
             mask: document.getElementById('mask'),
             result: document.getElementById('result'),
             highest: document.getElementById('highest'),
-            restartBtn: document.getElementById('restartBtn')
+            restartBtn: document.getElementById('restartBtn'),
+            reviveBtn: document.getElementById('reviveBtn')
+        };
+
+        NGAME.ui.handleReviveBtn = function () {
+            var lives = window.localStorage.getItem('lives') || 0;
+            if (lives > 0) {
+                NGAME.ui.reviveBtn.innerText = '复活(' + lives + ')';
+                NGAME.util.show(NGAME.ui.reviveBtn, 'inline-block');
+            }
+            else {
+                NGAME.util.hide(NGAME.ui.reviveBtn);
+            }
         };
 
         NGAME.util.bindTap(document.getElementById('trueBtn'), function () {
@@ -275,9 +324,9 @@
             NGAME.status.reset();
         });
 
-        if (typeof WeixinJSBridge === 'undefined') {
-            NGAME.util.hide(document.getElementById('share'));
-        }
+        NGAME.util.bindTap(NGAME.ui.reviveBtn, function () {
+            NGAME.status.revive();
+        });
 
         if (typeof window.localStorage !== 'undefined') {
             var highest = window.localStorage.getItem('highest');
@@ -298,8 +347,15 @@
             event.preventDefault();
         });
     });
-
+    /*function param(obj) {
+        var str = '';
+        for (var key in obj) {
+            str += '[' + key + ']' + obj[key] + ',';
+        }
+        return str;
+    }*/
     document.addEventListener('WeixinJSBridgeReady', function () {
+        NGAME.util.show(document.getElementById('share'));
         WeixinJSBridge.on('menu:share:appmessage', function () {
             WeixinJSBridge.invoke('sendAppMessage', {
                 appid: NGAME.share.appId,
@@ -309,6 +365,11 @@
                 link: NGAME.share.url,
                 desc: NGAME.share.desc,
                 title: NGAME.share.title
+            }, function (res) {
+                if (/[\w_]+:cancel/.test(res.err_msg)) {
+                    return;
+                }
+                NGAME.share.getBonus();
             });
         });
         WeixinJSBridge.on('menu:share:timeline', function () {
@@ -319,8 +380,13 @@
                 link: NGAME.share.url,
                 desc: NGAME.share.desc,
                 title: NGAME.share.desc
+            }, function (res) {
+                if (/[\w_]+:cancel/.test(res.err_msg)) {
+                    return;
+                }
+                NGAME.share.getBonus();
             });
         });
     });
-
+// window.localStorage.removeItem('date');
 })(window);
