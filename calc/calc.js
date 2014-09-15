@@ -120,6 +120,19 @@
                 NGAME.share.desc = '速算小游戏，看谁算得快？';
                 NGAME.util.hide(NGAME.ui.mask);
                 NGAME.status.next();
+            },
+            revive: function () {
+                var lives = window.localStorage.getItem('lives') || 0;
+                if (lives <= 0) {
+                    NGAME.status.reset();
+                    return;
+                }
+
+                lives -= 1;
+                window.localStorage.setItem('lives', lives);
+                status = 0;
+                NGAME.util.hide(NGAME.ui.mask);
+                NGAME.status.next();
             }
         };
     })();
@@ -274,9 +287,9 @@
         }
         else {
             window.localStorage = {
-                setItem: function () {},
-                getItem: function () {
-                    return Number.MAX_VALUE;
+                setItem: function (key, value) {},
+                getItem: function (key) {
+                    return null;
                 }
             };
         }
