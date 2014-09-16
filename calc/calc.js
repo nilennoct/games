@@ -233,9 +233,15 @@
 
                 if (Math.random() < 0.5) {
                     numbers[1] += delta;
+                    if (numbers[1] <= 0) {
+                        numbers[1] = 1;
+                    }
                 }
                 else {
                     numbers[2] += delta;
+                    if (numbers[2] <= 0) {
+                        numbers[2] = 1;
+                    }
                 }
 
                 textL = numbers[0] + ' ÷ ' + numbers[1];
