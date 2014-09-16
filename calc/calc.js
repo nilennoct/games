@@ -93,7 +93,6 @@
                 if (status === 1) {
                     return;
                 }
-//                NGAME.ui.process.className = '';
                 NGAME.ui.process.style.cssText = 'width: 0%;';
                 NGAME.ui.score.innerText = ++score;
                 if (score === 25 || score === 45 || score === 60 || score === 75 || score === 90) {
@@ -104,8 +103,6 @@
             end: function () {
                 status = 1;
                 NGAME.timer.clearTimer();
-//                NGAME.ui.process.className = '';
-//                NGAME.ui.process.style.cssText = 'width: 0%;';
                 NGAME.ui.result.innerHTML = '<p>游戏结束</p><p>最终得分：' + score + '</p>';
                 var highest = window.localStorage.getItem('highest');
                 if (score > highest) {
@@ -123,7 +120,6 @@
                 score = -1;
                 NGAME.timer.resetDuration();
                 NGAME.ui.score.innerText = status = 0;
-//                NGAME.ui.process.className = '';
                 NGAME.share.desc = '速算小游戏，看谁算得快？';
                 NGAME.util.hide(NGAME.ui.mask);
                 NGAME.status.next();
@@ -157,6 +153,12 @@
             speedUp: function () {
                 if (duration > 2000) {
                     duration -= 1000;
+                }
+                else if (duration > 1000) {
+                    duration -= 500;
+                }
+                else if (duration > 500) {
+                    duration -= 250;
                 }
                 else {
                     duration /= 2;
